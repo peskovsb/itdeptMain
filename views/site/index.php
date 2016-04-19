@@ -1,4 +1,16 @@
 <?php
+$dbConfig = @require '../config/db.php';
+@require '../config/classPDO.php';
+$db = new Database($dbConfig['dsn'],$dbConfig['username'],$dbConfig['password']);
+        /*
+         * Getting All @Locations;
+         */
+        $sql = 'SELECT *,CONCAT(staff_lastname," ",staff_name) as profile,CONCAT(company_prefix, type_prefix, comp_name) as webname FROM computers LEFT JOIN staff ON computers.comp_profile = staff.staff_id LEFT JOIN company ON computers.comp_company = company.company_id LEFT JOIN computers_type ON computers_type.type_id = computers.comp_type ORDER by id DESC';
+        $tb = $db->connection->prepare($sql);
+        $tb->execute();
+        $arrComputers = $tb->fetchAll(PDO::FETCH_ASSOC);
+
+        //echo '<pre>'; print_r($arrComputers); echo '</pre>';
 
 /* @var $this yii\web\View */
 
@@ -83,6 +95,10 @@ $this->title = 'Компьютерная техника';
         ],
     ];
 
+
+    $futureJSON = $arrComputers;
+    // echo '<pre>'; print_r($futureJSON); echo '</pre>';
+
 /*    for($i=0;$i<50;$i++){
 
         $futureJSON[] = [
@@ -102,9 +118,9 @@ $this->title = 'Компьютерная техника';
 
 $arrayData2 = [
     'value1'=>'webname',
-    'value2'=>'IPadr',
-    'value3'=>'fio',
-    'value4'=>'status',
+    'value2'=>'comp_ip',
+    'value3'=>'profile',
+    'value4'=>'comp_status',
     'value5'=>'id'
 ];
 
@@ -163,7 +179,7 @@ HTML;
 function phpModificator($arrayData,$arrayFields,$tpl){
   foreach($arrayFields as $key=>$items){
         $value = $arrayData[$items];
-        if($items=='status'){
+        if($items=='comp_status'){
             switch($value){
                 case 1: $tpl = str_replace("{".$key."}", "<span class='statusWork'>Работает</span>", $tpl);
                 break;
@@ -259,9 +275,9 @@ echo "<table id='test'></table>"
 
     <h1 class="mainHeader"><?= $this->title ?></h1>
 
-<div class="successPopUp" style="display: block;">
+<div class="successPopUp">
     <svg  aria-hidden="true" class="octicon-x" height="16" version="1.1" viewBox="0 0 12 16" width="12"><path d="M7.48 8l3.75 3.75-1.48 1.48-3.75-3.75-3.75 3.75-1.48-1.48 3.75-3.75L0.77 4.25l1.48-1.48 3.75 3.75 3.75-3.75 1.48 1.48-3.75 3.75z"></path></svg>
-    Добавлен новый элемент: BLWS002
+    Добавлен новый элемент: <span class="nameDevice"></span>
 </div>
 
     <table class="mainTableTpl">
@@ -341,7 +357,6 @@ pageGenerator($page,$limit,$futureJSON,$arrayData2,$tplMyRender);
     </ul> -->
     <?php paginationBuilder($page,$limit,$futureJSON);?>
 
-<a id="soso" href="javascript:void(0);">Клик</a>
  
     <script>
         var jsonMAIN,objParseJ;
@@ -387,13 +402,13 @@ $(document).ready(function(){
         jQuery.each(jsonMAIN,function(key,val){
             // console.log('number: ',key);
             if(key >=  pageStart && key < pageEnd){
-                if(val.status){
-                    switch(val.status){
-                        case '1': val.status = "<span class=\"statusWork\">Работает</span>";
+                if(val.comp_status){
+                    switch(val.comp_status){
+                        case '1': val.comp_status = "<span class=\"statusWork\">Работает</span>";
                         break;
-                        case '2': val.status = "<span class=\"statusFree\">Свободен</span>";
+                        case '2': val.comp_status = "<span class=\"statusFree\">Свободен</span>";
                         break;
-                        case '3': val.status = "<span class=\"statusRepair\">Ремонт</span>";
+                        case '3': val.comp_status = "<span class=\"statusRepair\">Ремонт</span>";
                         break;
                     }
                     
@@ -417,58 +432,7 @@ $(document).ready(function(){
 
 
 $(document).on('submit','#komputersCreate',function(){
-    var FormData, mistake = 0, tpl ='';
-
-
-//-----------------------------
-
-    index = $('.mainPagination li a.activePagi').text();
-
-        limit = <?=$limit?>;
-        if(index==1){
-            pageStart = 0;
-        }else{
-            pageStart = (index-1)*limit;
-        }
-        pageEnd = pageStart + limit;
-    
-
-    $someItems = '[{"id": "77","fio":"Edward","IPadr":"192.168.0.77","status":"1","webname":"BLWS7777","typedevice":"WS","location":"1"}]';
-
-        objParseJ = jQuery.parseJSON($someItems);
-        jQuery.each(jsonMAIN,function(key,val){
-                objParseJ.push(val);
-        });
-        jsonMAIN = objParseJ; 
-
-        jQuery.each(jsonMAIN,function(key,val){
-            // console.log('number: ',key);
-            if(key >=  pageStart && key < pageEnd){
-                if(val.status){
-                    switch(val.status){
-                        case '1': val.status = "<span class=\"statusWork\">Работает</span>";
-                        break;
-                        case '2': val.status = "<span class=\"statusFree\">Свободен</span>";
-                        break;
-                        case '3': val.status = "<span class=\"statusRepair\">Ремонт</span>";
-                        break;
-                    }
-                    
-                }
-                 tpl += "<?=$tplMyRenderJS?>";
-            }
-        });
-
-        $('.mainTableTpl tr').each(function(){
-            $thisIndex = $(this).index();
-            if($thisIndex > 0 ){
-               $(this).remove();
-            }
-        });
-        //console.log(tpl);
-        $('.mainTableTpl tr').eq(0).after(tpl);
-
-//------------------------------
+    var FormData, mistake = 0, tpl ='',wbname='';
 
     FormData = $(this).serialize();
 
@@ -501,6 +465,64 @@ $(document).on('submit','#komputersCreate',function(){
                         $('#completeAjax').fadeIn('400');
                         setTimeout(function(){
                             removeFlowWindow();
+                            $('.successPopUp').show();
+                            
+//console.log(data);
+
+//-----------------------------
+
+    index = $('.mainPagination li a.activePagi').text();
+
+        limit = <?=$limit?>;
+        if(index==1){
+            pageStart = 0;
+        }else{
+            pageStart = (index-1)*limit;
+        }
+        pageEnd = pageStart + limit;
+    
+
+    $someItems = '[{"id": "77","fio":"Edward","IPadr":"192.168.0.77","status":"1","webname":"BLWS7777","typedevice":"WS","location":"1"}]';
+
+        objParseJ = jQuery.parseJSON(data);
+        $('.nameDevice').html(objParseJ[0].webname);
+        jQuery.each(jsonMAIN,function(key,val){
+                objParseJ.push(val);
+        });
+       
+        // console.log(wbname);
+        jsonMAIN = objParseJ; 
+
+        jQuery.each(jsonMAIN,function(key,val){
+            // console.log('number: ',key);
+            if(key >=  pageStart && key < pageEnd){
+                if(val.comp_status){
+                
+                    switch(val.comp_status){
+                        case '1': val.comp_status = "<span class=\"statusWork\">Работает</span>";
+                        break;
+                        case '2': val.comp_status = "<span class=\"statusFree\">Свободен</span>";
+                        break;
+                        case '3': val.comp_status = "<span class=\"statusRepair\">Ремонт</span>";
+                        break;
+                    }
+                    
+                }
+                 tpl += "<?=$tplMyRenderJS?>";
+            }
+        });
+
+        $('.mainTableTpl tr').each(function(){
+            $thisIndex = $(this).index();
+            if($thisIndex > 0 ){
+               $(this).remove();
+            }
+        });
+        //console.log(tpl);
+        $('.mainTableTpl tr').eq(0).after(tpl);
+
+//------------------------------
+
                         },700);
                     }
                 });

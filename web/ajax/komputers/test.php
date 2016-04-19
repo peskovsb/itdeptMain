@@ -1,20 +1,4 @@
 <?
-
-$filesRoute = "../../uploads";
-$entries = scandir($filesRoute);
-
-$someVar = 'tech_1460725275153.jpg';
-
-foreach($entries as $entry) {
-    $file = explode('tmp_', $entry);
-    if(isset($file[1])){
-	    if($someVar == $file[1]){
-	    	rename($filesRoute.'/'.$entry, $filesRoute.'/'.$someVar);
-	    }
-   	}
-}
-// ------------------------
-
 $dbConfig = @require_once '../../../config/db.php';
 @require_once '../../../config/classPDO.php';
 $db = new Database($dbConfig['dsn'],$dbConfig['username'],$dbConfig['password']);
