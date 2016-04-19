@@ -118,50 +118,6 @@ function validFunction(fieldstatus,fieldname){
     }
 }
 
-$(document).on('submit','#komputersCreate',function(){
-	var FormData, mistake = 0;
-
-	FormData = $(this).serialize();
-
-	$('.fieldHeader').css({
-		'color'			 : '#666',
-		'font-weight' 	 : 'normal'
-	});
-
-	$.ajax({
-	    dataType: "json",
-	    data: FormData,
-	    type: "POST",
-	    // async: false,
-	    url : "ajax/komputers/validator.php",
-	    success : function (data) {
-	    	$.each( data, function( key, val ) {
-	    		validFunction(val.mistakeIU,key);
-	    		if(val.mistakeIU == 'mistake'){
-	    			mistake = 1;
-	    		}
-	    	});
-	    	if(mistake == 0){
-	    		$('.mistakePopUp').hide();
-				$.ajax({
-				    data: FormData,
-				    type: "POST",
-				    url : "ajax/komputers/confirm.php",        
-				    success : function (data) {
-				    	$('#komputersCreate').remove();
-				    	$('#completeAjax').fadeIn('400');
-				    	setTimeout(function(){
-				    		removeFlowWindow();
-				    	},700);
-				    }
-				});
-	    	}
-	    }
-	});
-
-	return false;
-});
-
 $(document).on('click','.octicon-x',function(){
 	$(this).parent().hide();
 });
@@ -176,3 +132,4 @@ $(document).on('click','#numberGeneratorField', function(){
 	nextNumber = $(this).attr('data-gen');
 	$('input[name="nameField"]').val(nextNumber);
 });
+

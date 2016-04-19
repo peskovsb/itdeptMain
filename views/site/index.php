@@ -345,9 +345,11 @@ pageGenerator($page,$limit,$futureJSON,$arrayData2,$tplMyRender);
  
     <script>
         var jsonMAIN,objParseJ;
-        jsonMAIN = <?=json_encode($futureJSON)?>
+        jsonMAIN = <?=json_encode($futureJSON)?>;
 
-$('#soso').click(function(){
+
+
+/*$(document).on('click','#soso',function(){
     $someItems = '[{"id": "77","fio":"Edward","IPadr":"192.168.0.77","status":"1","webname":"BLWS7777","typedevice":"WS","location":"1"}]';
 
     objParseJ = jQuery.parseJSON($someItems);
@@ -355,7 +357,9 @@ $('#soso').click(function(){
             objParseJ.push(val);
     });
     jsonMAIN = objParseJ; 
-});
+
+});*/
+
 
 
 
@@ -408,7 +412,103 @@ $(document).ready(function(){
         $('.mainTableTpl tr').eq(0).after(tpl);
         event.preventDefault();
     });
+
+});
+
+
+$(document).on('submit','#komputersCreate',function(){
+    var FormData, mistake = 0, tpl ='';
+
+
+//-----------------------------
+
+    index = $('.mainPagination li a.activePagi').text();
+
+        limit = <?=$limit?>;
+        if(index==1){
+            pageStart = 0;
+        }else{
+            pageStart = (index-1)*limit;
+        }
+        pageEnd = pageStart + limit;
     
+
+    $someItems = '[{"id": "77","fio":"Edward","IPadr":"192.168.0.77","status":"1","webname":"BLWS7777","typedevice":"WS","location":"1"}]';
+
+        objParseJ = jQuery.parseJSON($someItems);
+        jQuery.each(jsonMAIN,function(key,val){
+                objParseJ.push(val);
+        });
+        jsonMAIN = objParseJ; 
+
+        jQuery.each(jsonMAIN,function(key,val){
+            // console.log('number: ',key);
+            if(key >=  pageStart && key < pageEnd){
+                if(val.status){
+                    switch(val.status){
+                        case '1': val.status = "<span class=\"statusWork\">Работает</span>";
+                        break;
+                        case '2': val.status = "<span class=\"statusFree\">Свободен</span>";
+                        break;
+                        case '3': val.status = "<span class=\"statusRepair\">Ремонт</span>";
+                        break;
+                    }
+                    
+                }
+                 tpl += "<?=$tplMyRenderJS?>";
+            }
+        });
+
+        $('.mainTableTpl tr').each(function(){
+            $thisIndex = $(this).index();
+            if($thisIndex > 0 ){
+               $(this).remove();
+            }
+        });
+        //console.log(tpl);
+        $('.mainTableTpl tr').eq(0).after(tpl);
+
+//------------------------------
+
+    FormData = $(this).serialize();
+
+    $('.fieldHeader').css({
+        'color'          : '#666',
+        'font-weight'    : 'normal'
+    });
+
+    $.ajax({
+        dataType: "json",
+        data: FormData,
+        type: "POST",
+        // async: false,
+        url : "ajax/komputers/validator.php",
+        success : function (data) {
+            $.each( data, function( key, val ) {
+                validFunction(val.mistakeIU,key);
+                if(val.mistakeIU == 'mistake'){
+                    mistake = 1;
+                }
+            });
+            if(mistake == 0){
+                $('.mistakePopUp').hide();
+                $.ajax({
+                    data: FormData,
+                    type: "POST",
+                    url : "ajax/komputers/confirm.php",        
+                    success : function (data) {
+                        $('#komputersCreate').remove();
+                        $('#completeAjax').fadeIn('400');
+                        setTimeout(function(){
+                            removeFlowWindow();
+                        },700);
+                    }
+                });
+            }
+        }
+    });
+
+    return false;
 });
 
     </script>
