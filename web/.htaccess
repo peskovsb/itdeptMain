@@ -1,0 +1,12 @@
+RewriteEngine on
+RewriteBase /itdept/web/
+
+# RewriteRule ^([\w]+)$ $1/ [R=301,L]
+
+
+# Verwende Verzeichnis oder Datei, wenn sie vorhanden sind
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Leite andernfalls auf index.php um
+RewriteRule . index.php
