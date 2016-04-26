@@ -376,6 +376,68 @@ pageGenerator($page,$limit,$futureJSON,$arrayData2,$tplMyRender);
 });*/
 
 
+$(document).on('submit','#komputersDelete',function(){
+    var FormData, mistake = 0, tpl ='', someObj = {};
+
+    FormData = $(this).serialize();
+    $.ajax({
+        dataType: "json",
+        data: FormData,
+        type: "POST",
+        url : "ajax/komputers/deleting.php",
+        success : function (data) {
+            // console.log(data);
+            // console.log(data[0].recordID);
+            // console.log(objParseJ[0].recordID);
+            if(data[0].recordID.length>0) {
+                jQuery.each(jsonMAIN,function(key,val){
+                        if(data[0].recordID == val.id){
+                             jsonMAIN[key]='';
+                        }
+
+                }); 
+            }
+
+        index = $('.mainPagination li a.activePagi').text();
+
+            limit = <?=$limit?>;
+            if(index==1){
+                pageStart = 0;
+            }else{
+                pageStart = (index-1)*limit;
+            }
+            pageEnd = pageStart + limit;
+            jQuery.each(jsonMAIN,function(key,val){
+                // console.log('number: ',key);
+                if(key >=  pageStart && key < pageEnd && typeof(val.id)!='undefined'){
+                    if(val.comp_status){
+                        switch(val.comp_status){
+                            case '1': val.comp_status = "<span class=\"statusWork\">Работает</span>";
+                            break;
+                            case '2': val.comp_status = "<span class=\"statusFree\">Свободен</span>";
+                            break;
+                            case '3': val.comp_status = "<span class=\"statusRepair\">Ремонт</span>";
+                            break;
+                        }
+                        
+                    }
+                     tpl += "<?=$tplMyRenderJS?>";
+                }
+            });
+            // console.log(tpl);
+            $('.mainTableTpl tr').each(function(){
+                $thisIndex = $(this).index();
+                if($thisIndex > 0 ){
+                   $(this).remove();
+                }
+            });
+            //console.log(tpl);
+            $('.mainTableTpl tr').eq(0).after(tpl);     
+            removeFlowWindow();       
+        }
+    });
+    return false;
+});
 
 
 $(document).ready(function(){
@@ -401,7 +463,10 @@ $(document).ready(function(){
         // console.log(jsonMAIN[index].fio);
         jQuery.each(jsonMAIN,function(key,val){
             // console.log('number: ',key);
-            if(key >=  pageStart && key < pageEnd){
+            if(key >=  pageStart && key < pageEnd && typeof(val.id)!='undefined'){
+                if(val.profile==null){
+                    val.profile = '';
+                }
                 if(val.comp_status){
                     switch(val.comp_status){
                         case '1': val.comp_status = "<span class=\"statusWork\">Работает</span>";
@@ -483,6 +548,7 @@ $(document).on('submit','#komputersCreate',function(){
         objParseJ = jQuery.parseJSON(data);
         if(objParseJ[0].recordID.length>0) {
             jQuery.each(jsonMAIN,function(key,val){
+                if( typeof(val.id)!='undefined'){
                     if(objParseJ[0].recordID == val.id){
                         jsonMAIN[key].webname = objParseJ[0].webname;
                         jsonMAIN[key].comp_ip = objParseJ[0].comp_ip;
@@ -497,6 +563,7 @@ $(document).on('submit','#komputersCreate',function(){
                         }
                         jsonMAIN[key].comp_status = objParseJ[0].comp_status;                        
                     }
+                }
             });
         }else{
             $('.successPopUp').show();
@@ -512,7 +579,7 @@ $(document).on('submit','#komputersCreate',function(){
 
         jQuery.each(jsonMAIN,function(key,val){
             // console.log('number: ',key);
-            if(key >=  pageStart && key < pageEnd){
+            if(key >=  pageStart && key < pageEnd && typeof(val.id)!='undefined'){
                 if(val.comp_status){
                 
                     switch(val.comp_status){
@@ -549,6 +616,8 @@ $(document).on('submit','#komputersCreate',function(){
 
     return false;
 });
+
+
 
     </script>
 
