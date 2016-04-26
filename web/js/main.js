@@ -133,3 +133,6 @@ $(document).on('click','#numberGeneratorField', function(){
 	$('input[name="nameField"]').val(nextNumber);
 });
 
+$(document).on('click','.WindowCloser',function(){
+	removeFlowWindow();
+});

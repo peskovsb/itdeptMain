@@ -151,7 +151,7 @@ $tplMy = <<<HTML
                     <span class="ToolTinner">Редактировать</span>
                 </span>
                 </a>
-                <a href="#" class="delTbl toolTcontainer">
+                <a  data-id="{value5}" onclick="$(this).flowWindow({'ajaxLink' : 'ajax/komputers/testDel.php', 'header' : 'Удалить элемент' });return false;" href="#" class="delTbl toolTcontainer">
                     <svg aria-hidden="true" class="octicon octicon-trashcan" height="16" version="1.1" viewBox="0 0 12 16" width="12" color="#c11"><path d="M10 2H8c0-0.55-0.45-1-1-1H4c-0.55 0-1 0.45-1 1H1c-0.55 0-1 0.45-1 1v1c0 0.55 0.45 1 1 1v9c0 0.55 0.45 1 1 1h7c0.55 0 1-0.45 1-1V5c0.55 0 1-0.45 1-1v-1c0-0.55-0.45-1-1-1z m-1 12H2V5h1v8h1V5h1v8h1V5h1v8h1V5h1v9z m1-10H1v-1h9v1z"></path></svg>
                 <span class=ToolT>
                     <span class="ToolTinner">Удалить</span>
@@ -342,7 +342,7 @@ if($page==0 || $page==1){
 }else{
     $page = $page-1;
 }
-$limit = 5;
+$limit = 15;
 
 pageGenerator($page,$limit,$futureJSON,$arrayData2,$tplMyRender);
             ?>
@@ -465,7 +465,6 @@ $(document).on('submit','#komputersCreate',function(){
                         $('#completeAjax').fadeIn('400');
                         setTimeout(function(){
                             removeFlowWindow();
-                            $('.successPopUp').show();
                             
 //console.log(data);
 
@@ -480,18 +479,36 @@ $(document).on('submit','#komputersCreate',function(){
             pageStart = (index-1)*limit;
         }
         pageEnd = pageStart + limit;
-    
-
-    $someItems = '[{"id": "77","fio":"Edward","IPadr":"192.168.0.77","status":"1","webname":"BLWS7777","typedevice":"WS","location":"1"}]';
 
         objParseJ = jQuery.parseJSON(data);
-        $('.nameDevice').html(objParseJ[0].webname);
-        jQuery.each(jsonMAIN,function(key,val){
-                objParseJ.push(val);
-        });
+        if(objParseJ[0].recordID.length>0) {
+            jQuery.each(jsonMAIN,function(key,val){
+                    if(objParseJ[0].recordID == val.id){
+                        jsonMAIN[key].webname = objParseJ[0].webname;
+                        jsonMAIN[key].comp_ip = objParseJ[0].comp_ip;
+                        jsonMAIN[key].profile = objParseJ[0].profile;
+                        switch(objParseJ[0].comp_status){
+                            case '1': objParseJ[0].comp_status = "<span class=\"statusWork\">Работает</span>";
+                            break;
+                            case '2': objParseJ[0].comp_status = "<span class=\"statusFree\">Свободен</span>";
+                            break;
+                            case '3': objParseJ[0].comp_status = "<span class=\"statusRepair\">Ремонт</span>";
+                            break;
+                        }
+                        jsonMAIN[key].comp_status = objParseJ[0].comp_status;                        
+                    }
+            });
+        }else{
+            $('.successPopUp').show();
+            $('.nameDevice').html(objParseJ[0].webname);
+            jQuery.each(jsonMAIN,function(key,val){
+                    objParseJ.push(val);
+            });
+            jsonMAIN = objParseJ;
+        }
        
         // console.log(wbname);
-        jsonMAIN = objParseJ; 
+         
 
         jQuery.each(jsonMAIN,function(key,val){
             // console.log('number: ',key);

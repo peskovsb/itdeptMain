@@ -21,22 +21,37 @@ if(isset($_POST['kommentField'])){
 }
 
 	if(isset($_POST['recordID']) && strlen($_POST['recordID'])>0){
-		echo $_POST['recordID'];
-		echo 'correction...';
+		// echo $_POST['recordID'];
+		/*$confirmJson = [
+			[
+				'id' => $_POST['recordID'],
+				'webname'  => $_POST['typeField'].,
+				'comp_status'	=> $_POST['statusField'],
+				'profile'  => $_POST['profileField'],
+				'comp_ip'		=> $_POST['ipField'],
+				'recordID'    => $_POST['recordID']
+			]
+		];*/
+		$sql = 'UPDATE computers SET comp_name=:comp_name, comp_status=:comp_status, comp_ip=:comp_ip, comp_sid=:comp_sid, comp_location=:comp_location, comp_type=:comp_type, comp_profile=:comp_profile, comp_komment=:comp_komment, comp_company=:comp_company WHERE id = :computer_id';
+		$tb = $db->connection->prepare($sql);
+		$tb->execute([':computer_id'=>$_POST['recordID'], ':comp_name'=>$_POST['nameField'], ':comp_status'=>$_POST['statusField'], ':comp_ip'=>$_POST['ipField'], ':comp_sid'=>$sidField, ':comp_location'=>$_POST['locField'], ':comp_type'=>$_POST['typeField'], ':comp_profile'=>$_POST['profileField'], ':comp_komment'=>$kommentField, ':comp_company'=>$_POST['compField']]);
+		$lastInserted = $_POST['recordID'];
 	}else{
 		$sql = 'INSERT INTO computers (comp_location,comp_company,comp_type,comp_name,comp_status,comp_profile,comp_ip,comp_sid,comp_komment) VALUES (:comp_location,:comp_company,:comp_type,:comp_name,:comp_status,:comp_profile,:comp_ip,:comp_sid,:comp_komment)';
 		$tb = $db->connection->prepare($sql);
 		$tb->execute([':comp_location' => $_POST['locField'],':comp_company' => $_POST['compField'],':comp_type' => $_POST['typeField'],':comp_name' => $_POST['nameField'],':comp_status' => $_POST['statusField'],':comp_profile' => $_POST['profileField'],':comp_ip' => $_POST['ipField'],':comp_sid' => $sidField,':comp_komment' => $kommentField]);
 		$lastInserted = $db->connection->lastInsertId('id');
-		/*
-		 * Getting All @Locations;
-		 */
 
+
+	}
+
+		/*
+		 * Getting All @computers DATA;
+		 */
 		$sql = 'SELECT *,CONCAT(staff_lastname," ",staff_name) as profile,CONCAT(company_prefix, type_prefix, comp_name) as webname FROM computers LEFT JOIN staff ON computers.comp_profile = staff.staff_id LEFT JOIN company ON computers.comp_company = company.company_id LEFT JOIN computers_type ON computers_type.type_id = computers.comp_type WHERE computers.id=:computers_id';
 		$tb = $db->connection->prepare($sql);
 		$tb->execute([':computers_id'=>$lastInserted]);
 		$arrComputers = $tb->fetch(PDO::FETCH_ASSOC);	
-			
 
 		$confirmJson = [
 			[
@@ -45,10 +60,10 @@ if(isset($_POST['kommentField'])){
 				'comp_status'	=> $_POST['statusField'],
 				'profile'  => $arrComputers['profile'],
 				'comp_ip'		=> $_POST['ipField'],
+				'recordID'    => $_POST['recordID']
 			]
 		];
-		echo json_encode($confirmJson);
-	}
+
 
 	/*
 	 * Saving file To the Disk, tmp files will be removed	 
@@ -67,4 +82,6 @@ if(isset($_POST['kommentField'])){
 		}
 	}
 	// ------------------------	
+
+	echo json_encode($confirmJson);
 };
