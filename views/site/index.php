@@ -377,7 +377,7 @@ pageGenerator($page,$limit,$futureJSON,$arrayData2,$tplMyRender);
 
 
 $(document).on('submit','#komputersDelete',function(){
-    var FormData, mistake = 0, tpl ='', someObj = {};
+    var FormData, mistake = 0, tpl ='', someObj = [];
 
     FormData = $(this).serialize();
     $.ajax({
@@ -391,11 +391,11 @@ $(document).on('submit','#komputersDelete',function(){
             // console.log(objParseJ[0].recordID);
             if(data[0].recordID.length>0) {
                 jQuery.each(jsonMAIN,function(key,val){
-                        if(data[0].recordID == val.id){
-                             jsonMAIN[key]='';
+                        if(data[0].recordID != val.id){
+                             someObj.push(val);
                         }
-
                 }); 
+                jsonMAIN = someObj;
             }
 
         index = $('.mainPagination li a.activePagi').text();
@@ -410,6 +410,9 @@ $(document).on('submit','#komputersDelete',function(){
             jQuery.each(jsonMAIN,function(key,val){
                 // console.log('number: ',key);
                 if(key >=  pageStart && key < pageEnd && typeof(val.id)!='undefined'){
+                    if(val.profile==null){
+                        val.profile = '';
+                    }
                     if(val.comp_status){
                         switch(val.comp_status){
                             case '1': val.comp_status = "<span class=\"statusWork\">Работает</span>";
@@ -553,6 +556,9 @@ $(document).on('submit','#komputersCreate',function(){
                         jsonMAIN[key].webname = objParseJ[0].webname;
                         jsonMAIN[key].comp_ip = objParseJ[0].comp_ip;
                         jsonMAIN[key].profile = objParseJ[0].profile;
+                        if(val.profile==null){
+                            val.profile = '';
+                        }
                         switch(objParseJ[0].comp_status){
                             case '1': objParseJ[0].comp_status = "<span class=\"statusWork\">Работает</span>";
                             break;
